@@ -3,120 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fortune Wheel Final</title>
+    <title>Fortune Wheel Ultra</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
     <style>
-        body { 
-            margin: 0; padding: 0; 
-            background: #000; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; overflow: hidden;
-            font-family: sans-serif;
-        }
-
-        .container {
-            position: relative;
-            width: 100vw;
-            max-width: 600px;
-            aspect-ratio: 1 / 1;
-            background: url('https://raw.githubusercontent.com/kazntmr-del/assets/main/background.png') no-repeat center;
-            background-size: contain;
-            perspective: 1000px;
-        }
-
-        .wheel-plate {
-            position: absolute;
-            top: 11%; 
-            left: 19%;
-            width: 66%;
-            height: 66%;
-            z-index: 1;
-            transform: rotateX(25deg);
-            transform-style: preserve-3d;
-            /* Убрали ВСЕ тени и границы здесь, чтобы ничего не вылетало */
-        }
-
-        #wheel {
-            width: 100%;
-            height: auto;
-            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
-            will-change: transform;
-            
-            /* ЖЕСТКАЯ МАСКА: обрезает всё, что вне круга, и добавляет внутренний объем */
-            -webkit-mask-image: radial-gradient(circle, black 68%, transparent 70%);
-            mask-image: radial-gradient(circle, black 68%, transparent 70%);
-            
-            /* Эффект легкого затемнения и контраста */
-            filter: brightness(0.9) contrast(1.1);
-        }
-
-        /* Оставляем только ОДИН слой для блика, строго внутри колеса */
-        .wheel-plate::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 3;
-            
-            /* Блик, который не может выйти за границы, так как он 100% ширины */
-            background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 60%);
-            background-size: 250% 250%;
-            background-position: 150% 150%;
-            
-            /* Повторяем маску и здесь на всякий случай */
-            -webkit-mask-image: radial-gradient(circle, black 68%, transparent 70%);
-            mask-image: radial-gradient(circle, black 68%, transparent 70%);
-            
-            animation: shine-move 6s infinite ease-in-out;
-        }
-
-        @keyframes shine-move {
-            0% { background-position: 150% 150%; }
-            50% { background-position: 0% 0%; }
-            100% { background-position: -150% -150%; }
-        }
-
-        #arrow {
-            position: absolute;
-            top: 20%; 
-            left: 51%;
-            width: 35px;
-            transform: translateX(-50%);
-            z-index: 10;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,1));
-        }
-
+        body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        .container { position: relative; width: 100vw; max-width: 600px; aspect-ratio: 1 / 1; background: url('https://raw.githubusercontent.com/kazntmr-del/assets/main/background.png') no-repeat center; background-size: contain; perspective: 1000px; }
+        .wheel-plate { position: absolute; top: 11%; left: 19%; width: 66%; height: 66%; z-index: 1; transform: rotateX(25deg); transform-style: preserve-3d; border-radius: 50%; overflow: hidden; }
+        #wheel { width: 100%; height: auto; transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1); will-change: transform; -webkit-mask-image: radial-gradient(circle, black 68%, transparent 70%); mask-image: radial-gradient(circle, black 68%, transparent 70%); filter: brightness(0.9) contrast(1.1); }
+        .wheel-plate::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; z-index: 3; background: linear-gradient(45deg, rgba(255,255,255,0) 40%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 60%); background-size: 250% 250%; background-position: 150% 150%; -webkit-mask-image: radial-gradient(circle, black 68%, transparent 70%); mask-image: radial-gradient(circle, black 68%, transparent 70%); animation: shine-move 6s infinite ease-in-out; }
+        @keyframes shine-move { 0% { background-position: 150% 150%; } 50% { background-position: 0% 0%; } 100% { background-position: -150% -150%; } }
+        #arrow { position: absolute; top: 20%; left: 51%; width: 35px; transform: translateX(-50%); z-index: 10; filter: drop-shadow(0 5px 10px rgba(0,0,0,1)); }
         .shake { animation: arrow-shake 0.1s infinite; }
-        @keyframes arrow-shake {
-            0% { transform: translateX(-50%) rotate(0); }
-            50% { transform: translateX(-50%) rotate(-12deg); }
-            100% { transform: translateX(-50%) rotate(0); }
-        }
-
-        .spin-button {
-            position: absolute;
-            bottom: 5%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 40px;
-            background: linear-gradient(180deg, #FFD700 0%, #B8860B 100%);
-            border: 2px solid #5c4400;
-            border-radius: 50px;
-            color: #2e2200;
-            font-weight: 900;
-            font-size: 20px;
-            text-transform: uppercase;
-            cursor: pointer;
-            z-index: 20;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.05); }
-            100% { transform: translateX(-50%) scale(1); }
-        }
+        @keyframes arrow-shake { 0% { transform: translateX(-50%) rotate(0); } 50% { transform: translateX(-50%) rotate(-12deg); } 100% { transform: translateX(-50%) rotate(0); } }
+        .spin-button { position: absolute; bottom: 5%; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: linear-gradient(180deg, #FFD700 0%, #B8860B 100%); border: 2px solid #5c4400; border-radius: 50px; color: #2e2200; font-weight: 900; font-size: 20px; text-transform: uppercase; cursor: pointer; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.6); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } 100% { transform: translateX(-50%) scale(1); } }
     </style>
 </head>
 <body>
@@ -130,6 +34,12 @@
 </div>
 
 <script>
+    // Сообщаем Telegram, что приложение готово
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand(); // Разворачиваем на весь экран
+    }
+
     const prizes = [
         { id: "super", name: "Записи + Разбор + Баллы Х3", angle: 0 },
         { id: "consult", name: "Разбор 60 мин", angle: 60 },
@@ -152,18 +62,48 @@
         const prizeIndex = Math.floor(Math.random() * prizes.length);
         const prize = prizes[prizeIndex];
 
-        const offset = Math.floor(Math.random() * 20) - 10;
-        const rotationToAdd = (360 * 8) + (360 - prize.angle) + offset;
-        
+        const rotationToAdd = (360 * 8) + (360 - prize.angle);
         currentRotation += rotationToAdd;
 
         wheel.style.transform = `rotate(${currentRotation}deg)`;
         arrow.classList.add('shake');
 
+        // Вибрация (для мобильных устройств)
+        if ("vibrate" in navigator) {
+            const vbrInterval = setInterval(() => {
+                navigator.vibrate(10);
+            }, 100);
+            setTimeout(() => clearInterval(vbrInterval), 5000);
+        }
+
         setTimeout(() => {
             arrow.classList.remove('shake');
-            alert("Поздравляем! Ваш выигрыш: " + prize.name);
-            window.location.href = `https://t.me/KaznacheevaTeam_bot?start=win_${prize.id}`;
+            
+            // Запуск конфетти
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FFA500', '#FFFFFF']
+            });
+
+            // Небольшая пауза после остановки перед алертом
+            setTimeout(() => {
+                alert("Поздравляем! Ваш выигрыш: " + prize.name);
+                
+                // Формируем ссылку на бота
+                const botLink = `https://t.me/KaznacheevaTeam_bot?start=win_${prize.id}`;
+                
+                // Переходим по ссылке и закрываем приложение
+                window.location.href = botLink;
+                
+                // Закрываем WebApp через 500мс, чтобы успел сработать редирект
+                setTimeout(() => {
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.close();
+                    }
+                }, 500);
+            }, 500);
         }, 5200);
     }
 </script>
